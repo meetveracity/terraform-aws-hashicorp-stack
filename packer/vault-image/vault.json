@@ -1,13 +1,13 @@
 {
     "min_packer_version": "0.12.0",
     "variables": {
-      "vault_module_version": "v0.8.0",
-      "vault_version": "0.10.3",
+      "vault_module_version": "v0.9.1",
+      "vault_version": "0.10.4",
       "consul_module_version": "v0.3.5",
-      "consul_version": "1.2.1",
-      "ca_public_key_path": "private-tls-cert/cert/ca.crt.pem",
-      "tls_public_key_path": "private-tls-cert/cert/vault.crt.pem",
-      "tls_private_key_path": "private-tls-cert/cert/vault.key.pem",
+      "consul_version": "1.2.2",
+      "ca_public_key_path": "../tls/cert/ca.crt.pem",
+      "tls_public_key_path": "../tls/cert/vault.crt.pem",
+      "tls_private_key_path": "../tls/cert/vault.key.pem",
       "ami_version": "{{timestamp}}"
     },
     "builders": [{
