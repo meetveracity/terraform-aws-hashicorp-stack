@@ -1,0 +1,89 @@
+{
+    "min_packer_version": "0.12.0",
+    "variables": {
+        "aws_region": "us-gov-west-1",
+        "consul_version": "1.2.2",
+        "consul_module_version": "v0.3.3",
+        "ami_version": "{{timestamp}}",
+        "ca_public_key_path": "../tls/cert/ca.crt.pem",
+        "tls_public_key_path": "../tls/cert/consul.crt.pem",
+        "tls_private_key_path": "../tls/cert/consul.key.pem"
+    },
+    "builders": [
+        {
+            "name": "amz-linux-ami",
+            "ami_name": "consul-{{user `ami_version`}}",
+            "ami_description": "Amazon Linux instance that has Consul installed.",
+            "instance_type": "t2.micro",
+            "region": "{{user `aws_region`}}",
+            "vpc_id": "{{user `vpc_id`}}",
+            "subnet_id": "{{user `subnet_id`}}",
+            "associate_public_ip_address": true,
+            "type": "amazon-ebs",
+            "source_ami_filter": {
+                "filters": {
+                    "virtualization-type": "hvm",
+                    "architecture": "x86_64",
+                    "name": "*amzn-ami-hvm-*",
+                    "block-device-mapping.volume-type": "gp2",
+                    "root-device-type": "ebs"
+                },
+                "owners": [
+                    "amazon"
+                ],
+                "most_recent": true
+            },
+            "ssh_username": "ec2-user",
+            "tags": {
+                "Consul Version": "{{user `consul_version`}}",
+                "Consul Module Version": "{{user `consul_module_version`}}"
+            },
+            "run_tags": {
+                "Consul Version": "{{user `consul_version`}}",
+                "Consul Module Version": "{{user `consul_module_version`}}"
+            }
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "file",
+            "source": "{{user `ca_public_key_path`}}",
+            "destination": "/tmp/ca.crt.pem"
+        },
+        {
+            "type": "file",
+            "source": "{{user `tls_public_key_path`}}",
+            "destination": "/tmp/consul.crt.pem"
+        },
+        {
+            "type": "file",
+            "source": "{{user `tls_private_key_path`}}",
+            "destination": "/tmp/consul.key.pem"
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "sudo yum -y install git",
+                "git clone --branch {{user `consul_module_version`}} https://github.com/hashicorp/terraform-aws-consul.git /tmp/terraform-aws-consul",
+                "/tmp/terraform-aws-consul/modules/install-consul/install-consul --version {{user `consul_version`}} --ca-file-path /tmp/ca.crt.pem --cert-file-path /tmp/consul.crt.pem --key-file-path /tmp/consul.key.pem",
+                "/tmp/terraform-aws-consul/modules/install-dnsmasq/install-dnsmasq",
+                "mkdir -p /tmp/consul-config"
+            ],
+            "pause_before": "30s"
+        },
+        {
+            "type": "file",
+            "source": "config/",
+            "destination": "/tmp/consul-config"
+        },
+        {
+            "type": "shell",
+            "inline": [
+                "sudo mv /tmp/consul-config/* /opt/consul/config/",
+                "sudo chown consul:consul /opt/consul/config/*",
+                "sudo chmod 644 /opt/consul/config/*",
+                "rm -rf /tmp/consul-config"
+            ]
+        }
+    ]
+}
