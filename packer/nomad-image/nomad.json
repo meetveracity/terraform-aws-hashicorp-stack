@@ -1,0 +1,66 @@
+{
+    "min_packer_version": "0.12.0",
+    "variables": {
+      "aws_region": "us-gov-west-1",
+      "nomad_version": "0.8.4",
+      "nomad_module_version": "v0.4.2",
+      "consul_module_version": "v0.3.5",
+      "consul_version": "1.2.1",
+      "remote_docker_access": "false",
+      "ami_version": "{{timestamp}}"
+    },
+    "builders": [
+      {
+        "ami_name": "nomad-consul-amazon-linux-{{user `ami_version`}}",
+        "ami_description": "An Amazon Linux AMI that has Nomad and Consul installed.",
+        "instance_type": "t2.micro",
+        "name": "amazon-linux-ami",
+        "type": "amazon-ebs",
+        "vpc_id": "{{user `vpc_id`}}",
+        "subnet_id": "{{user `subnet_id`}}",
+        "associate_public_ip_address": true,
+        "source_ami_filter": {
+          "filters": {
+            "virtualization-type": "hvm",
+            "architecture": "x86_64",
+            "name": "*amzn-ami-hvm-*",
+            "block-device-mapping.volume-type": "gp2",
+            "root-device-type": "ebs"
+          },
+          "owners": ["amazon"],
+          "most_recent": true
+        },
+        "ssh_username": "ec2-user",
+        "tags": {
+          "Nomad Version": "{{user `nomad_version`}}",
+          "Nomad Module Version": "{{user `nomad_module_version`}}",
+          "Consul Version": "{{user `consul_version`}}",
+          "Consul Module Version": "{{user `consul_module_version`}}"
+        }
+      }
+    ],
+    "provisioners": [
+      {
+        "type": "shell",
+        "inline": [
+          "sudo yum update -y",
+          "sudo yum install -y git",
+          "sudo yum install -y docker",
+          "sudo service docker start",
+          "sudo usermod -a -G docker ec2-user",
+          "if {{user `remote_docker_access`}}; then echo 'OPTIONS=\"$OPTIONS -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock\"' | sudo tee -a /etc/sysconfig/docker > /dev/null; fi"
+        ],
+        "only": [
+          "amazon-linux-ami"
+        ]
+      },
+      {
+        "type": "shell",
+        "inline": [
+          "git clone --branch {{user `nomad_module_version`}} https://github.com/hashicorp/terraform-aws-nomad.git /tmp/terraform-aws-nomad",
+          "/tmp/terraform-aws-nomad/modules/install-nomad/install-nomad --version {{user `nomad_version`}}"
+        ],
+        "pause_before": "30s"
+      }
+    ]
+  }

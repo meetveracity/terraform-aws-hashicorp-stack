@@ -183,3 +183,4 @@ resource "aws_security_group_rule" "allow_inbound_http" {
   from_port   = "80"
   to_port     = "80"
   protocol    = "tcp"
+}
