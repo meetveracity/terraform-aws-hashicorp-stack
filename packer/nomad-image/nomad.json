@@ -5,8 +5,11 @@
       "nomad_version": "0.8.4",
       "nomad_module_version": "v0.4.2",
       "consul_module_version": "v0.3.5",
-      "consul_version": "1.2.1",
+      "consul_version": "1.2.2",
       "remote_docker_access": "false",
+      "ca_public_key_path": "../tls/cert/ca.crt.pem",
+      "tls_public_key_path": "../tls/cert/nomad.crt.pem",
+      "tls_private_key_path": "../tls/cert/nomad.key.pem",
       "ami_version": "{{timestamp}}"
     },
     "builders": [
@@ -61,6 +64,35 @@
           "/tmp/terraform-aws-nomad/modules/install-nomad/install-nomad --version {{user `nomad_version`}}"
         ],
         "pause_before": "30s"
+      },{
+        "type": "file",
+        "source": "{{user `ca_public_key_path`}}",
+        "destination": "/tmp/ca.crt.pem"
+      },{
+        "type": "file",
+        "source": "{{user `tls_public_key_path`}}",
+        "destination": "/tmp/nomad.crt.pem"
+      },{
+        "type": "file",
+        "source": "{{user `tls_private_key_path`}}",
+        "destination": "/tmp/nomad.key.pem"
+      },{
+        "type": "shell",
+        "inline": [
+          "sudo mkdir /opt/nomad/tls",
+          "sudo mv /tmp/ca.crt.pem /opt/nomad/tls/",
+          "sudo mv /tmp/nomad.crt.pem /opt/nomad/tls/",
+          "sudo mv /tmp/nomad.key.pem /opt/nomad/tls/",
+          "sudo chown nomad:nomad -R /opt/nomad/tls",
+          "sudo chmod 600 /opt/nomad/tls/*"
+        ]
+      },{
+        "type": "shell",
+        "inline": [
+          "git clone --branch {{user `consul_module_version`}} https://github.com/hashicorp/terraform-aws-consul.git /tmp/terraform-aws-consul",
+          "/tmp/terraform-aws-consul/modules/install-consul/install-consul --version {{user `consul_version`}}",
+          "/tmp/terraform-aws-consul/modules/install-dnsmasq/install-dnsmasq"
+        ]
       }
     ]
   }
