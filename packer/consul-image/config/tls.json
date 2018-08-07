@@ -1,0 +1,8 @@
+{
+    "ports": {
+        "http": -1,
+        "https": 8500
+    },
+    "verify_outgoing": true,
+    "verify_incoming": true
+}

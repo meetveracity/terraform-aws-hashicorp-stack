@@ -12,7 +12,7 @@
     "builders": [
         {
             "name": "amz-linux-ami",
-            "ami_name": "consul-{{user `ami_version`}}",
+            "ami_name": "consul-amzn-linux-{{user `ami_version`}}",
             "ami_description": "Amazon Linux instance that has Consul installed.",
             "instance_type": "t2.micro",
             "region": "{{user `aws_region`}}",

@@ -10,4 +10,11 @@ set -e
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
 # These variables are passed in via Terraform template interpolation
-/opt/consul/bin/run-consul --server --cluster-tag-key "${consul_cluster_tag_key}" --cluster-tag-value "${consul_cluster_tag_value}"
+/opt/consul/bin/run-consul --server --cluster-tag-key "${consul_cluster_tag_key}" \
+    --cluster-tag-value "${consul_cluster_tag_value}" \
+    --enable-gossip-encryption \
+    --gossip-encryption-key "${gossip_encryption_key}" \
+    --enable-rpc-encryption \
+    --ca-path "/opt/consul/tls/ca/ca.crt.pem" \
+    --cert-file-path "/opt/consul/tls/consul.crt.pem" \
+    --key-file-path "/opt/consul/tls/consul.key.pem"

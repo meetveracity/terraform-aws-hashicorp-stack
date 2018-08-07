@@ -38,5 +38,8 @@ data "template_file" "user_data_consul" {
   vars {
     consul_cluster_tag_key   = "${var.consul_cluster_tag_key}"
     consul_cluster_tag_value = "consul-${var.name}"
+    enable_gossip_encryption = "${var.consul_enable_gossip_encryption}"
+    gossip_encryption_key = "${var.consul_gossip_encryption_key}"
+    enable_rpc_encryption = "${var.consul_enable_rpc_encryption}"
   }
 }

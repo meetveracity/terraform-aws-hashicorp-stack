@@ -81,7 +81,7 @@ variable "nomad_server_size" {
 
 variable "nomad_client_size" {
   description = "The number of Nomad client nodes to deploy."
-  default     = 4
+  default     = 2
 }
 
 variable "vault_cluster_size" {
@@ -124,22 +124,16 @@ variable "force_destroy_s3_bucket" {
   default     = false
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# SUB-MODULE VERSION PARAMETERS
-# These parameters have reasonable defaults.
-# ---------------------------------------------------------------------------------------------------------------------
-
-variable "consul_module_version" {
-  description = "Version of the Consul AWS Terraform module to use"
-  default     = "v0.3.5"
+variable "consul_enable_gossip_encryption" {
+  description = "Gossip encryption key for Consul"
+  default = false
 }
 
-variable "vault_module_version" {
-  description = "Version of the Vault AWS Terraform module to use"
-  default     = "v0.9.1"
+variable "consul_gossip_encryption_key" {
+  description = "Gossip encryption key for Consul"
+  default = ""
 }
 
-variable "nomad_module_version" {
-  description = "Version of the Nomad AWS Terraform module to use"
-  default     = "v0.4.2"
+variable "consul_enable_rpc_encryption" {
+  default = true
 }

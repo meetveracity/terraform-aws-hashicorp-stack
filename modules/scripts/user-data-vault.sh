@@ -15,5 +15,12 @@ readonly VAULT_TLS_CERT_FILE="/opt/vault/tls/vault.crt.pem"
 readonly VAULT_TLS_KEY_FILE="/opt/vault/tls/vault.key.pem"
 
 # The cluster_tag variables below are filled in via Terraform interpolation
-/opt/consul/bin/run-consul --client --cluster-tag-key "${consul_cluster_tag_key}" --cluster-tag-value "${consul_cluster_tag_value}"
+/opt/consul/bin/run-consul --client --cluster-tag-key "${consul_cluster_tag_key}" \
+    --cluster-tag-value "${consul_cluster_tag_value}" \
+    --enable-gossip-encryption \
+    --gossip-encryption-key "${gossip_encryption_key}" \
+    --enable-rpc-encryption \
+    --ca-path "/opt/consul/tls/ca/ca.crt.pem" \
+    --cert-file-path "/opt/consul/tls/consul.crt.pem" \
+    --key-file-path "/opt/consul/tls/consul.key.pem"
 /opt/vault/bin/run-vault --s3-bucket "${s3_bucket_name}" --s3-bucket-region "${aws_region}" --tls-cert-file "$VAULT_TLS_CERT_FILE"  --tls-key-file "$VAULT_TLS_KEY_FILE"
