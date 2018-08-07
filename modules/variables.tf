@@ -45,6 +45,18 @@ variable "aws_region" {
   description = "AWS Region"
 }
 
+variable "consul_ami_id" {
+  description = "Id of the consul AMI to use. If left blank, default to the latest AMI named consul-amzn-linux-*"
+}
+
+variable "vault_ami_id" {
+  description = "Id of the vault AMI to use. If left blank, default to the latest AMI named vault-consul-amzn-linux-*"
+}
+
+variable "nomad_ami_id" {
+  description = "Id of the Nomad AMI to use. If left blank, default to the latest AMI named nomad-consul-amazon-linux-*"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.
@@ -60,21 +72,6 @@ variable "allowed_inbound_security_group_ids" {
   description = "List of security groups to allow access to the Consul, Vault and Nomad instances."
   type        = "list"
   default     = []
-}
-
-variable "consul_ami_id" {
-  description = "Id of the consul AMI to use. If left blank, default to the latest AMI named consul-amzn-linux-*"
-  default     = ""
-}
-
-variable "vault_ami_id" {
-  description = "Id of the vault AMI to use. If left blank, default to the latest AMI named vault-consul-amzn-linux-*"
-  default     = ""
-}
-
-variable "nomad_ami_id" {
-  description = "Id of the Nomad AMI to use. If left blank, default to the latest AMI named nomad-consul-amazon-linux-*"
-  default     = ""
 }
 
 variable "nomad_server_size" {

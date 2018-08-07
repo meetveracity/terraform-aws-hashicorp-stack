@@ -1,15 +1,6 @@
 # ---------------------------------------------------------------------------------------------------------------------
 # DEPLOY THE NOMAD SERVER NODES
 # ---------------------------------------------------------------------------------------------------------------------
-data "aws_ami" "nomad_consul" {
-  count       = "${length(var.nomad_ami_id) >= 1 ? 0 : 1}"
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["nomad-consul-amazon-linux-*"]
-  }
-}
 
 module "nomad_servers" {
   source = "github.com/hashicorp/terraform-aws-nomad//modules/nomad-cluster?ref=v0.4.2"
@@ -22,7 +13,7 @@ module "nomad_servers" {
   max_size         = "${var.nomad_server_size}"
   desired_capacity = "${var.nomad_server_size}"
 
-  ami_id    = "${var.nomad_ami_id == "" ? data.aws_ami.nomad_consul.image_id : var.nomad_ami_id}"
+  ami_id    = "${var.nomad_ami_id}"
   user_data = "${data.template_file.user_data_nomad_server.rendered}"
 
   vpc_id                      = "${var.vpc_id}"
@@ -76,7 +67,7 @@ module "nomad_clients" {
   min_size                    = "${var.nomad_client_size}"
   max_size                    = "${var.nomad_client_size}"
   desired_capacity            = "${var.nomad_client_size}"
-  ami_id                      = "${var.nomad_ami_id == "" ? data.aws_ami.nomad_consul.image_id : var.nomad_ami_id}"
+  ami_id                      = "${var.nomad_ami_id}"
   user_data                   = "${data.template_file.user_data_nomad_client.rendered}"
   vpc_id                      = "${var.vpc_id}"
   subnet_ids                  = ["${var.subnet_ids}"]

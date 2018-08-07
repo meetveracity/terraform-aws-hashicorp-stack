@@ -6,30 +6,13 @@
 # the [consul-image](https://github.com/meetveracity/consul-image) Packer template.
 # ---------------------------------------------------------------------------------------------------------------------
 
-data "aws_ami" "consul" {
-  count       = "${length(var.consul_ami_id) >= 1 ? 0 : 1}"
-  most_recent = true
-
-  owners = ["${var.owner}"]
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "name"
-    values = ["consul-amzn-linux-*"]
-  }
-}
-
 module "consul_cluster" {
   source = "github.com/hashicorp/terraform-aws-consul//modules/consul-cluster?ref=v0.3.5"
 
   vpc_id        = "${var.vpc_id}"
   subnet_ids    = ["${var.subnet_ids}"]
   ssh_key_name  = "${var.ssh_key_name}"
-  ami_id        = "${var.consul_ami_id == "" ? data.aws_ami.consul.image_id : var.consul_ami_id}"
+  ami_id        = "${var.consul_ami_id}"
   instance_type = "${var.consul_instance_type}"
 
   allowed_inbound_cidr_blocks        = ["${var.allowed_inbound_cidr_blocks}"]
