@@ -24,9 +24,9 @@ data "aws_ami" "vault_consul" {
 }
 
 module "vault_cluster" {
-  source = "github.com/hashicorp/terraform-aws-vault.git//modules/vault-cluster?ref=${var.vault_module_version}"
+  source = "github.com/hashicorp/terraform-aws-vault.git//modules/vault-cluster?ref=v0.9.1"
 
-  cluster_name  = "${var.vault_cluster_name}"
+  cluster_name  = "vault-${var.name}"
   cluster_size  = "${var.vault_cluster_size}"
   instance_type = "${var.vault_instance_type}"
 
@@ -43,10 +43,11 @@ module "vault_cluster" {
   # repeatedly try to redeploy them.
   health_check_type = "EC2"
 
-  allowed_ssh_cidr_blocks            = ["${var.allowed_ssh_cidr_blocks}"]
-  allowed_inbound_cidr_blocks        = ["${var.allowed_inbound_cidr_blocks}"]
-  allowed_inbound_security_group_ids = ["${var.allowed_inbound_security_group_ids}"]
-  ssh_key_name                       = "${var.ssh_key_name}"
+  allowed_ssh_cidr_blocks              = ["${var.allowed_ssh_cidr_blocks}"]
+  allowed_inbound_cidr_blocks          = ["${var.allowed_inbound_cidr_blocks}"]
+  allowed_inbound_security_group_ids   = ["${var.allowed_inbound_security_group_ids}"]
+  allowed_inbound_security_group_count = "${length(var.allowed_inbound_security_group_ids)}"
+  ssh_key_name                         = "${var.ssh_key_name}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -56,7 +57,7 @@ module "vault_cluster" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "consul_iam_policies_servers" {
-  source = "github.com/hashicorp/terraform-aws-consul.git//modules/consul-iam-policies?ref=${var.consul_module_version}"
+  source = "github.com/hashicorp/terraform-aws-consul.git//modules/consul-iam-policies?ref=v0.3.5"
 
   iam_role_id = "${module.vault_cluster.iam_role_id}"
 }
@@ -73,6 +74,6 @@ data "template_file" "user_data_vault_cluster" {
     aws_region               = "${var.aws_region}"
     s3_bucket_name           = "${var.s3_bucket_name}"
     consul_cluster_tag_key   = "${var.consul_cluster_tag_key}"
-    consul_cluster_tag_value = "${var.consul_cluster_name}"
+    consul_cluster_tag_value = "consul-${var.name}"
   }
 }

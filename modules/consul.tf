@@ -24,7 +24,7 @@ data "aws_ami" "consul" {
 }
 
 module "consul_cluster" {
-  source = "github.com/hashicorp/terraform-aws-consul//modules/consul-cluster?ref=${var.consul_module_version}"
+  source = "github.com/hashicorp/terraform-aws-consul//modules/consul-cluster?ref=v0.3.5"
 
   vpc_id        = "${var.vpc_id}"
   subnet_ids    = ["${var.subnet_ids}"]
@@ -32,13 +32,13 @@ module "consul_cluster" {
   ami_id        = "${var.consul_ami_id == "" ? data.aws_ami.consul.image_id : var.consul_ami_id}"
   instance_type = "${var.consul_instance_type}"
 
-  allowed_inbound_cidr_blocks     = ["${var.allowed_inbound_cidr_blocks}"]
-  allowed_inbound_security_groups = ["${var.allowed_inbound_security_groups}"]
-  allowed_ssh_cidr_blocks         = ["${var.allowed_ssh_cidr_blocks}"]
+  allowed_inbound_cidr_blocks        = ["${var.allowed_inbound_cidr_blocks}"]
+  allowed_inbound_security_group_ids = ["${var.allowed_inbound_security_group_ids}"]
+  allowed_ssh_cidr_blocks            = ["${var.allowed_ssh_cidr_blocks}"]
 
-  cluster_name      = "${var.consul_cluster_name}"
+  cluster_name      = "consul-${var.name}"
   cluster_tag_key   = "${var.consul_cluster_tag_key}"
-  cluster_tag_value = "${var.consul_cluster_name}"
+  cluster_tag_value = "consul-${var.name}"
   cluster_size      = "${var.consul_cluster_size}"
 
   user_data = "${data.template_file.user_data_consul.rendered}"
@@ -54,6 +54,6 @@ data "template_file" "user_data_consul" {
 
   vars {
     consul_cluster_tag_key   = "${var.consul_cluster_tag_key}"
-    consul_cluster_tag_value = "${var.consul_cluster_name}"
+    consul_cluster_tag_value = "consul-${var.name}"
   }
 }

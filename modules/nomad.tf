@@ -12,9 +12,9 @@ data "aws_ami" "nomad_consul" {
 }
 
 module "nomad_servers" {
-  source = "github.com/hashicorp/terraform-aws-nomad//modules/nomad-cluster?ref=${var.nomad_module_version}"
+  source = "github.com/hashicorp/terraform-aws-nomad//modules/nomad-cluster?ref=v0.4.2"
 
-  cluster_name  = "${var.nomad_cluster_name}-server"
+  cluster_name  = "nomad-${var.name}-server"
   instance_type = "${var.nomad_server_instance_type}"
 
   # You should typically use a fixed size of 3 or 5 for your Nomad server cluster
@@ -25,11 +25,11 @@ module "nomad_servers" {
   ami_id    = "${var.nomad_ami_id == "" ? data.aws_ami.nomad_consul.image_id : var.nomad_ami_id}"
   user_data = "${data.template_file.user_data_nomad_server.rendered}"
 
-  vpc_id     = "${var.vpc_id}"
-  subnet_ids = ["${var.subnet_ids}"]
-  allowed_ssh_cidr_blocks = ["${var.allowed_ssh_cidr_blocks}"]
+  vpc_id                      = "${var.vpc_id}"
+  subnet_ids                  = ["${var.subnet_ids}"]
+  allowed_ssh_cidr_blocks     = ["${var.allowed_ssh_cidr_blocks}"]
   allowed_inbound_cidr_blocks = ["${var.allowed_inbound_cidr_blocks}"]
-  ssh_key_name                = "${aws_key_pair.auth.key_name}"
+  ssh_key_name                = "${var.ssh_key_name}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ module "nomad_servers" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "consul_iam_policies_nomad_servers" {
-  source = "github.com/hashicorp/terraform-aws-consul//modules/consul-iam-policies?ref=v${var.consul_module_version}"
+  source = "github.com/hashicorp/terraform-aws-consul//modules/consul-iam-policies?ref=v0.3.5"
 
   iam_role_id = "${module.nomad_servers.iam_role_id}"
 }
@@ -64,25 +64,25 @@ data "template_file" "user_data_nomad_server" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "nomad_clients" {
-  source = "github.com/hashicorp/terraform-aws-nomad//modules/nomad-cluster?ref=${var.nomad_module_version}"
+  source = "github.com/hashicorp/terraform-aws-nomad//modules/nomad-cluster?ref=v0.4.2"
 
-  cluster_name  = "${var.nomad_cluster_name}-client"
+  cluster_name  = "nomad-${var.name}-client"
   instance_type = "${var.nomad_client_instance_type}"
 
   # Give the clients a different tag so they don't try to join the server cluster
   cluster_tag_key   = "nomad-clients"
-  cluster_tag_value = "${var.nomad_cluster_name}"
+  cluster_tag_value = "nomad-${var.name}-client"
 
-  min_size         = "${var.nomad_client_size}"
-  max_size         = "${var.nomad_client_size}"
-  desired_capacity = "${var.nomad_client_size}"
-  ami_id    = "${var.nomad_ami_id == "" ? data.aws_ami.nomad_consul.image_id : var.nomad_ami_id}"
-  user_data = "${data.template_file.user_data_nomad_client.rendered}"
-  vpc_id     = "${var.vpc_id}"
-  subnet_ids = ["${var.subnet_ids}"]
-  allowed_ssh_cidr_blocks = ["${var.allowed_ssh_cidr_blocks}"]
+  min_size                    = "${var.nomad_client_size}"
+  max_size                    = "${var.nomad_client_size}"
+  desired_capacity            = "${var.nomad_client_size}"
+  ami_id                      = "${var.nomad_ami_id == "" ? data.aws_ami.nomad_consul.image_id : var.nomad_ami_id}"
+  user_data                   = "${data.template_file.user_data_nomad_client.rendered}"
+  vpc_id                      = "${var.vpc_id}"
+  subnet_ids                  = ["${var.subnet_ids}"]
+  allowed_ssh_cidr_blocks     = ["${var.allowed_ssh_cidr_blocks}"]
   allowed_inbound_cidr_blocks = ["${var.allowed_inbound_cidr_blocks}"]
-  ssh_key_name                = "${aws_key_pair.auth.key_name}"
+  ssh_key_name                = "${var.ssh_key_name}"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ module "nomad_clients" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "consul_iam_policies_nomad_clients" {
-  source = "github.com/hashicorp/terraform-aws-consul//modules/consul-iam-policies?ref=${var.consul_module_version}"
+  source = "github.com/hashicorp/terraform-aws-consul//modules/consul-iam-policies?ref=v0.3.5"
 
   iam_role_id = "${module.nomad_clients.iam_role_id}"
 }
@@ -117,7 +117,7 @@ data "template_file" "user_data_nomad_client" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 resource "aws_elb" "nomad" {
-  name = "${var.nomad_cluster_name}"
+  name = "nomad-${var.name}"
 
   internal                    = "true"
   cross_zone_load_balancing   = "true"
@@ -130,7 +130,7 @@ resource "aws_elb" "nomad" {
 
   # Run the ELB in TCP passthrough mode
   listener {
-    lb_port           = "80"
+    lb_port           = "443"
     lb_protocol       = "TCP"
     instance_port     = "4646"
     instance_protocol = "TCP"
@@ -145,7 +145,7 @@ resource "aws_elb" "nomad" {
   }
 
   tags {
-    Name = "${var.nomad_cluster_name}"
+    Name = "nomad-${var.name}"
   }
 }
 
@@ -178,9 +178,24 @@ resource "aws_security_group" "nomad_elb" {
   vpc_id      = "${var.vpc_id}"
 }
 
-resource "aws_security_group_rule" "allow_inbound_http" {
+resource "aws_security_group_rule" "allow_inbound_http_cidr_blocks" {
+  count       = "${length(var.allowed_inbound_cidr_blocks) >= 1 ? 1 : 0}"
   type        = "ingress"
-  from_port   = "80"
-  to_port     = "80"
+  from_port   = "443"
+  to_port     = "443"
   protocol    = "tcp"
+  cidr_blocks = ["${var.allowed_inbound_cidr_blocks}"]
+
+  security_group_id = "${aws_security_group.nomad_elb.id}"
+}
+
+resource "aws_security_group_rule" "allow_inbound_http_security_groups" {
+  count                    = "${length(var.allowed_inbound_security_group_ids)}"
+  type                     = "ingress"
+  from_port                = "443"
+  to_port                  = "443"
+  protocol                 = "tcp"
+  source_security_group_id = "${element(var.allowed_inbound_security_group_ids, count.index)}"
+
+  security_group_id = "${aws_security_group.nomad_elb.id}"
 }
