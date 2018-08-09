@@ -57,6 +57,10 @@ variable "nomad_ami_id" {
   description = "Id of the Nomad AMI to use. If left blank, default to the latest AMI named nomad-consul-amazon-linux-*"
 }
 
+variable "nomad_gossip_encryption_key" {
+  description = "Gossip encryption key for Nomad"
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL PARAMETERS
 # These parameters have reasonable defaults.

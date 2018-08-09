@@ -49,4 +49,5 @@ module "hashistack" {
 
     consul_enable_gossip_encryption = true
     consul_gossip_encryption_key = "${var.consul_gossip_encryption_key}"
+    nomad_gossip_encryption_key = "${var.nomad_gossip_encryption_key}"
 }

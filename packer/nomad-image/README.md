@@ -14,3 +14,7 @@ To build the Nomad AMI:
 1. Run `packer build -var 'aws_region=REGION' nomad.json`, where `REGION` is the aws region identifier (such as `us-east-1`).
 
 When the build finishes, it will output the IDs of the new AMIs.
+
+export NOMAD_CAPATH=/opt/nomad/tls/ca.crt.pem; export NOMAD_CLIENT_CERT=/opt/nomad/tls/nomad.crt.pem; export NOMAD_CLIENT_KEY=/opt/nomad/tls/nomad.key.pem; export NOMAD_ADDR='https://127.0.0.1:4646';
+
+export CONSUL_CAPATH=/opt/nomad/tls/ca.crt.pem; export CONSUL_CLIENT_CERT=/opt/nomad/tls/nomad.crt.pem; export CONSUL_CLIENT_KEY=/opt/nomad/tls/nomad.key.pem; export CONSUL_HTTP_SSL=true

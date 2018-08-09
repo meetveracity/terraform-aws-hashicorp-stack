@@ -45,8 +45,12 @@ data "template_file" "user_data_nomad_server" {
 
   vars {
     num_servers       = "${var.nomad_server_size}"
-    cluster_tag_key   = "${module.consul_cluster.cluster_tag_key}"
-    cluster_tag_value = "${module.consul_cluster.cluster_tag_value}"
+    consul_cluster_tag_key   = "${module.consul_cluster.cluster_tag_key}"
+    consul_cluster_tag_value = "${module.consul_cluster.cluster_tag_value}"
+    consul_enable_gossip_encryption = "${var.consul_enable_gossip_encryption}"
+    consul_gossip_encryption_key = "${var.consul_gossip_encryption_key}"
+    consul_enable_rpc_encryption = "${var.consul_enable_rpc_encryption}"
+    nomad_gossip_encryption_key = "${var.nomad_gossip_encryption_key}"
   }
 }
 
@@ -97,8 +101,12 @@ data "template_file" "user_data_nomad_client" {
   template = "${file("${path.module}/scripts/user-data-nomad-client.sh")}"
 
   vars {
-    cluster_tag_key   = "${module.consul_cluster.cluster_tag_key}"
-    cluster_tag_value = "${module.consul_cluster.cluster_tag_value}"
+    consul_cluster_tag_key   = "${module.consul_cluster.cluster_tag_key}"
+    consul_cluster_tag_value = "${module.consul_cluster.cluster_tag_value}"
+    consul_enable_gossip_encryption = "${var.consul_enable_gossip_encryption}"
+    consul_gossip_encryption_key = "${var.consul_gossip_encryption_key}"
+    consul_enable_rpc_encryption = "${var.consul_enable_rpc_encryption}"
+    nomad_gossip_encryption_key = "${var.nomad_gossip_encryption_key}"
   }
 }
 

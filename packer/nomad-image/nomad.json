@@ -1,98 +1,101 @@
 {
-    "min_packer_version": "0.12.0",
-    "variables": {
-      "aws_region": "us-gov-west-1",
-      "nomad_version": "0.8.4",
-      "nomad_module_version": "v0.4.2",
-      "consul_module_version": "v0.3.5",
-      "consul_version": "1.2.2",
-      "remote_docker_access": "false",
-      "ca_public_key_path": "../tls/cert/ca.crt.pem",
-      "tls_public_key_path": "../tls/cert/nomad.crt.pem",
-      "tls_private_key_path": "../tls/cert/nomad.key.pem",
-      "ami_version": "{{timestamp}}"
-    },
-    "builders": [
-      {
-        "ami_name": "nomad-consul-amazon-linux-{{user `ami_version`}}",
-        "ami_description": "An Amazon Linux AMI that has Nomad and Consul installed.",
-        "instance_type": "t2.micro",
-        "name": "amazon-linux-ami",
-        "type": "amazon-ebs",
-        "vpc_id": "{{user `vpc_id`}}",
-        "subnet_id": "{{user `subnet_id`}}",
-        "associate_public_ip_address": true,
-        "source_ami_filter": {
-          "filters": {
-            "virtualization-type": "hvm",
-            "architecture": "x86_64",
-            "name": "*amzn-ami-hvm-*",
-            "block-device-mapping.volume-type": "gp2",
-            "root-device-type": "ebs"
-          },
-          "owners": ["amazon"],
-          "most_recent": true
+  "min_packer_version": "0.12.0",
+  "variables": {
+    "aws_region": "us-gov-west-1",
+    "nomad_version": "0.8.4",
+    "nomad_module_version": "v0.4.2",
+    "remote_docker_access": "false",
+    "ca_public_key_path": "../tls/cert/ca.crt.pem",
+    "tls_public_key_path": "../tls/cert/nomad.crt.pem",
+    "tls_private_key_path": "../tls/cert/nomad.key.pem",
+    "ami_version": "{{timestamp}}"
+  },
+  "builders": [
+    {
+      "ami_name": "nomad-consul-amazon-linux-{{user `ami_version`}}",
+      "ami_description": "An Amazon Linux AMI that has Nomad and Consul installed.",
+      "instance_type": "t2.micro",
+      "name": "amazon-linux-ami",
+      "type": "amazon-ebs",
+      "vpc_id": "{{user `vpc_id`}}",
+      "subnet_id": "{{user `subnet_id`}}",
+      "associate_public_ip_address": true,
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "architecture": "x86_64",
+          "name": "consul-amzn-linux-*"
         },
-        "ssh_username": "ec2-user",
-        "tags": {
-          "Nomad Version": "{{user `nomad_version`}}",
-          "Nomad Module Version": "{{user `nomad_module_version`}}",
-          "Consul Version": "{{user `consul_version`}}",
-          "Consul Module Version": "{{user `consul_module_version`}}"
-        }
-      }
-    ],
-    "provisioners": [
-      {
-        "type": "shell",
-        "inline": [
-          "sudo yum update -y",
-          "sudo yum install -y git",
-          "sudo yum install -y docker",
-          "sudo service docker start",
-          "sudo usermod -a -G docker ec2-user",
-          "if {{user `remote_docker_access`}}; then echo 'OPTIONS=\"$OPTIONS -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock\"' | sudo tee -a /etc/sysconfig/docker > /dev/null; fi"
+        "owners": [
+          "self"
         ],
-        "only": [
-          "amazon-linux-ami"
-        ]
+        "most_recent": true
       },
-      {
-        "type": "shell",
-        "inline": [
-          "git clone --branch {{user `nomad_module_version`}} https://github.com/hashicorp/terraform-aws-nomad.git /tmp/terraform-aws-nomad",
-          "/tmp/terraform-aws-nomad/modules/install-nomad/install-nomad --version {{user `nomad_version`}}"
-        ],
-        "pause_before": "30s"
-      },{
-        "type": "file",
-        "source": "{{user `ca_public_key_path`}}",
-        "destination": "/tmp/ca.crt.pem"
-      },{
-        "type": "file",
-        "source": "{{user `tls_public_key_path`}}",
-        "destination": "/tmp/nomad.crt.pem"
-      },{
-        "type": "file",
-        "source": "{{user `tls_private_key_path`}}",
-        "destination": "/tmp/nomad.key.pem"
-      },{
-        "type": "shell",
-        "inline": [
-          "sudo mkdir /opt/nomad/tls",
-          "sudo mv /tmp/ca.crt.pem /opt/nomad/tls/",
-          "sudo mv /tmp/nomad.crt.pem /opt/nomad/tls/",
-          "sudo mv /tmp/nomad.key.pem /opt/nomad/tls/",
-          "sudo chown nomad:nomad -R /opt/nomad/tls",
-          "sudo chmod 600 /opt/nomad/tls/*"
-        ]
-      },{
-        "type": "shell",
-        "inline": [
-          "git clone --branch {{user `consul_module_version`}} https://github.com/hashicorp/terraform-aws-consul.git /tmp/terraform-aws-consul",
-          "/tmp/terraform-aws-consul/modules/install-consul/install-consul --version {{user `consul_version`}}",
-          "/tmp/terraform-aws-consul/modules/install-dnsmasq/install-dnsmasq"
-        ]
+      "ssh_username": "ec2-user",
+      "tags": {
+        "Nomad Version": "{{user `nomad_version`}}",
+        "Nomad Module Version": "{{user `nomad_module_version`}}"
       }
-    ]
-  }
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo yum update -y",
+        "sudo yum install -y git",
+        "sudo yum install -y docker",
+        "sudo service docker start",
+        "sudo usermod -a -G docker ec2-user",
+        "if {{user `remote_docker_access`}}; then echo 'OPTIONS=\"$OPTIONS -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock\"' | sudo tee -a /etc/sysconfig/docker > /dev/null; fi"
+      ],
+      "only": [
+        "amazon-linux-ami"
+      ]
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "git clone --branch {{user `nomad_module_version`}} https://github.com/hashicorp/terraform-aws-nomad.git /tmp/terraform-aws-nomad",
+        "/tmp/terraform-aws-nomad/modules/install-nomad/install-nomad --version {{user `nomad_version`}}",
+        "mkdir -p /tmp/nomad-config"
+      ],
+      "pause_before": "30s"
+    },
+    {
+      "type": "file",
+      "source": "{{user `ca_public_key_path`}}",
+      "destination": "/tmp/ca.crt.pem"
+    },
+    {
+      "type": "file",
+      "source": "{{user `tls_public_key_path`}}",
+      "destination": "/tmp/nomad.crt.pem"
+    },
+    {
+      "type": "file",
+      "source": "{{user `tls_private_key_path`}}",
+      "destination": "/tmp/nomad.key.pem"
+    },
+    {
+      "type": "file",
+      "source": "config/",
+      "destination": "/tmp/nomad-config"
+    },
+    {
+      "type": "shell",
+      "inline": [
+        "sudo mkdir /opt/nomad/tls",
+        "sudo mv /tmp/ca.crt.pem /opt/nomad/tls/",
+        "sudo mv /tmp/nomad.crt.pem /opt/nomad/tls/",
+        "sudo mv /tmp/nomad.key.pem /opt/nomad/tls/",
+        "sudo chown nomad:nomad -R /opt/nomad/tls",
+        "sudo chmod 600 /opt/nomad/tls/*",
+        "sudo mv /tmp/nomad-config/* /opt/nomad/config/",
+        "sudo chown nomad:nomad /opt/nomad/config/*",
+        "sudo chmod 644 /opt/nomad/config/*",
+        "rm -rf /tmp/nomad-config"
+      ]
+    }
+  ]
+}

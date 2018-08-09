@@ -37,3 +37,7 @@ variable "allowed_ssh_cidr_blocks" {
 variable "consul_gossip_encryption_key" {
   description = "Gossip encryption key for Consul"
 }
+
+variable "nomad_gossip_encryption_key" {
+  description = "Gossip encryption key for Nomad"
+}
