@@ -1,3 +1,8 @@
+
+provider "aws" {}
+
+data "aws_region" "current" {}
+
 # ---------------------------------------------------------------------------------------------------------------------
 #  CREATE A CA CERTIFICATE
 # ---------------------------------------------------------------------------------------------------------------------
@@ -9,7 +14,7 @@ resource "tls_private_key" "ca" {
 
   # Store the CA private key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_private_key.ca.private_key_pem}' > '${var.ca_private_key_file_path}' && chmod ${var.permissions} '${var.ca_private_key_file_path}'"
+    command = "echo '${trimspace(tls_private_key.ca.private_key_pem)}' > '${var.ca_private_key_file_path}' && chmod ${var.permissions} '${var.ca_private_key_file_path}'"
   }
 }
 
@@ -28,7 +33,7 @@ resource "tls_self_signed_cert" "ca" {
 
   # Store the CA public key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_self_signed_cert.ca.cert_pem}' > '${var.ca_public_key_file_path}' && chmod ${var.permissions} '${var.ca_public_key_file_path}'"
+    command = "echo '${trimspace(tls_self_signed_cert.ca.cert_pem)}' > '${var.ca_public_key_file_path}' && chmod ${var.permissions} '${var.ca_public_key_file_path}'"
   }
 }
 
@@ -44,7 +49,7 @@ resource "tls_private_key" "consul" {
 
   # Store the certificate's private key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_private_key.consul.private_key_pem}' > '${var.private_key_folder}/consul.key.pem' && chmod ${var.permissions} '${var.private_key_folder}/consul.key.pem'"
+    command = "echo '${trimspace(tls_private_key.consul.private_key_pem)}' > '${var.private_key_folder}/consul.key.pem' && chmod ${var.permissions} '${var.private_key_folder}/consul.key.pem'"
   }
 }
 
@@ -73,7 +78,7 @@ resource "tls_locally_signed_cert" "consul" {
 
   # Store the certificate's public key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_locally_signed_cert.consul.cert_pem}' > '${var.public_key_folder}/consul.crt.pem' && chmod ${var.permissions} '${var.public_key_folder}/consul.crt.pem'"
+    command = "echo '${trimspace(tls_locally_signed_cert.consul.cert_pem)}' > '${var.public_key_folder}/consul.crt.pem' && chmod ${var.permissions} '${var.public_key_folder}/consul.crt.pem'"
   }
 }
 
@@ -85,7 +90,7 @@ resource "tls_private_key" "vault" {
 
   # Store the certificate's private key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_private_key.vault.private_key_pem}' > '${var.private_key_folder}/vault.key.pem' && chmod ${var.permissions} '${var.private_key_folder}/vault.key.pem'"
+    command = "echo '${trimspace(tls_private_key.vault.private_key_pem)}' > '${var.private_key_folder}/vault.key.pem' && chmod ${var.permissions} '${var.private_key_folder}/vault.key.pem'"
   }
 }
 
@@ -114,7 +119,7 @@ resource "tls_locally_signed_cert" "vault" {
 
   # Store the certificate's public key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_locally_signed_cert.vault.cert_pem}' > '${var.public_key_folder}/vault.crt.pem' && chmod ${var.permissions} '${var.public_key_folder}/vault.crt.pem'"
+    command = "echo '${trimspace(tls_locally_signed_cert.vault.cert_pem)}' > '${var.public_key_folder}/vault.crt.pem' && chmod ${var.permissions} '${var.public_key_folder}/vault.crt.pem'"
   }
 }
 
@@ -126,7 +131,7 @@ resource "tls_private_key" "nomad" {
 
   # Store the certificate's private key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_private_key.nomad.private_key_pem}' > '${var.private_key_folder}/nomad.key.pem' && chmod ${var.permissions} '${var.private_key_folder}/nomad.key.pem'"
+    command = "echo '${trimspace(tls_private_key.nomad.private_key_pem)}' > '${var.private_key_folder}/nomad.key.pem' && chmod ${var.permissions} '${var.private_key_folder}/nomad.key.pem'"
   }
 }
 
@@ -134,7 +139,7 @@ resource "tls_cert_request" "nomad" {
   key_algorithm   = "${tls_private_key.nomad.algorithm}"
   private_key_pem = "${tls_private_key.nomad.private_key_pem}"
 
-  dns_names    = ["nomad.service.consul"]
+  dns_names    = ["nomad.service.consul", "server.${data.aws_region.current.name}.nomad"]
   ip_addresses = ["127.0.0.1"]
 
   subject {
@@ -155,6 +160,6 @@ resource "tls_locally_signed_cert" "nomad" {
 
   # Store the certificate's public key in a file.
   provisioner "local-exec" {
-    command = "echo '${tls_locally_signed_cert.nomad.cert_pem}' > '${var.public_key_folder}/nomad.crt.pem' && chmod ${var.permissions} '${var.public_key_folder}/nomad.crt.pem'"
+    command = "echo '${trimspace(tls_locally_signed_cert.nomad.cert_pem)}' > '${var.public_key_folder}/nomad.crt.pem' && chmod ${var.permissions} '${var.public_key_folder}/nomad.crt.pem'"
   }
 }
