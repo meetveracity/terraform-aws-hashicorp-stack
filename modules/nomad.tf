@@ -51,6 +51,8 @@ data "template_file" "user_data_nomad_server" {
     consul_gossip_encryption_key = "${var.consul_gossip_encryption_key}"
     consul_enable_rpc_encryption = "${var.consul_enable_rpc_encryption}"
     nomad_gossip_encryption_key = "${var.nomad_gossip_encryption_key}"
+    vault_token = "${var.nomad_vault_token}"
+    vault_role = "${var.nomad_vault_role}"
   }
 }
 
@@ -107,6 +109,8 @@ data "template_file" "user_data_nomad_client" {
     consul_gossip_encryption_key = "${var.consul_gossip_encryption_key}"
     consul_enable_rpc_encryption = "${var.consul_enable_rpc_encryption}"
     nomad_gossip_encryption_key = "${var.nomad_gossip_encryption_key}"
+    enable_vault = "${length(var.nomad_vault_token) >= 1 ? true : false}"
+    vault_role = "${var.nomad_vault_role}"
   }
 }
 

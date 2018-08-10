@@ -41,3 +41,8 @@ variable "consul_gossip_encryption_key" {
 variable "nomad_gossip_encryption_key" {
   description = "Gossip encryption key for Nomad"
 }
+
+variable "nomad_vault_token" {
+  description = "The Vault token that Nomad should use to authentication to Vault. Blank value disables Vault integration."
+  default     = ""
+}

@@ -18,6 +18,24 @@ server {
 EOF
 chown nomad:nomad "/opt/nomad/config/encryption.hcl"
 
+if [ "${enable_vault}" = "true" ]; then
+cat > '/opt/nomad/config/vault.hcl' <<EOF
+vault {
+  enabled = true
+  address = "https://vault.service.consul:8200"
+
+  ca_file   = "/opt/nomad/tls/ca.crt.pem"
+  cert_file = "/opt/nomad/tls/nomad.crt.pem"
+  key_file  = "/opt/nomad/tls/nomad.key.pem"
+
+  # Setting the create_from_role option causes Nomad to create tokens for tasks
+  # via the provided role. This allows the role to manage what policies are
+  # allowed and disallowed for use by tasks.
+  create_from_role = "${vault_role}"
+}
+EOF
+fi
+
 # These variables are passed in via Terraform template interplation
 /opt/consul/bin/run-consul --client --cluster-tag-key "${consul_cluster_tag_key}" \
     --cluster-tag-value "${consul_cluster_tag_value}" \

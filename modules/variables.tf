@@ -130,14 +130,24 @@ variable "force_destroy_s3_bucket" {
 
 variable "consul_enable_gossip_encryption" {
   description = "Gossip encryption key for Consul"
-  default = false
+  default     = false
 }
 
 variable "consul_gossip_encryption_key" {
   description = "Gossip encryption key for Consul"
-  default = ""
+  default     = ""
 }
 
 variable "consul_enable_rpc_encryption" {
   default = true
+}
+
+variable "nomad_vault_role" {
+  description = "The Vault role that Nomad should use when requesting tokens for jobs."
+  default     = "nomad-cluster"
+}
+
+variable "nomad_vault_token" {
+  description = "The Vault token that Nomad should use to authentication to Vault. Blank value disables Vault integration."
+  default     = ""
 }
