@@ -140,7 +140,7 @@ resource "aws_elb" "nomad" {
   }
 
   health_check {
-    target              = "HTTP:4646/ui/"
+    target              = "TCP:4646"
     interval            = 15
     healthy_threshold   = 2
     unhealthy_threshold = 2
