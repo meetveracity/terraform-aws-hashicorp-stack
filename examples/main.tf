@@ -31,7 +31,7 @@ data "aws_ami" "nomad_consul" {
 data "aws_region" "current" {}
 
 module "hashistack" {
-    source = "../modules"
+    source = "../modules/hashistack"
 
     name = "hashistack"
     vpc_id = "${var.vpc_id}"
