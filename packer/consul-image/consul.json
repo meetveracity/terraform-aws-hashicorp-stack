@@ -11,9 +11,42 @@
     },
     "builders": [
         {
-            "name": "amz-linux-ami",
+            "name": "server-amz-linux-ami",
+            "ami_name": "consul-server-amzn-linux-{{user `ami_version`}}",
+            "ami_description": "Amazon Linux instance that has Consul Server installed.",
+            "instance_type": "t2.micro",
+            "region": "{{user `aws_region`}}",
+            "vpc_id": "{{user `vpc_id`}}",
+            "subnet_id": "{{user `subnet_id`}}",
+            "associate_public_ip_address": true,
+            "type": "amazon-ebs",
+            "source_ami_filter": {
+                "filters": {
+                    "virtualization-type": "hvm",
+                    "architecture": "x86_64",
+                    "name": "*amzn-ami-hvm-*",
+                    "block-device-mapping.volume-type": "gp2",
+                    "root-device-type": "ebs"
+                },
+                "owners": [
+                    "amazon"
+                ],
+                "most_recent": true
+            },
+            "ssh_username": "ec2-user",
+            "tags": {
+                "Consul Version": "{{user `consul_version`}}",
+                "Consul Module Version": "{{user `consul_module_version`}}"
+            },
+            "run_tags": {
+                "Consul Version": "{{user `consul_version`}}",
+                "Consul Module Version": "{{user `consul_module_version`}}"
+            }
+        },
+        {
+            "name": "client-amz-linux-ami",
             "ami_name": "consul-amzn-linux-{{user `ami_version`}}",
-            "ami_description": "Amazon Linux instance that has Consul installed.",
+            "ami_description": "Amazon Linux instance that has Consul Client installed.",
             "instance_type": "t2.micro",
             "region": "{{user `aws_region`}}",
             "vpc_id": "{{user `vpc_id`}}",
@@ -73,8 +106,19 @@
         },
         {
             "type": "file",
-            "source": "config/",
-            "destination": "/tmp/consul-config"
+            "source": "server-config/",
+            "destination": "/tmp/consul-config",
+            "only": [
+                "server-amz-linux-ami"
+            ]
+        },
+        {
+            "type": "file",
+            "source": "client-config/",
+            "destination": "/tmp/consul-config",
+            "only": [
+                "client-amz-linux-ami"
+            ]
         },
         {
             "type": "shell",

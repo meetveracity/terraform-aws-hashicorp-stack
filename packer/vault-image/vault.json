@@ -47,8 +47,7 @@
       "type": "shell",
       "inline": [
         "git clone --branch {{user `vault_module_version`}} https://github.com/hashicorp/terraform-aws-vault.git /tmp/terraform-aws-vault",
-        "/tmp/terraform-aws-vault/modules/install-vault/install-vault --version {{user `vault_version`}}",
-        "mkdir -p /tmp/consul-config"
+        "/tmp/terraform-aws-vault/modules/install-vault/install-vault --version {{user `vault_version`}}"
       ],
       "pause_before": "30s"
     },
@@ -68,11 +67,6 @@
       "destination": "/tmp/vault.key.pem"
     },
     {
-      "type": "file",
-      "source": "consul-config/",
-      "destination": "/tmp/consul-config"
-    },
-    {
       "type": "shell",
       "inline": [
         "sudo mv /tmp/ca.crt.pem /opt/vault/tls/",
@@ -81,15 +75,6 @@
         "sudo chown vault:vault /opt/vault/tls/*",
         "sudo chmod 600 /opt/vault/tls/*",
         "sudo /tmp/terraform-aws-vault/modules/update-certificate-store/update-certificate-store --cert-file-path /opt/vault/tls/ca.crt.pem"
-      ]
-    },
-    {
-      "type": "shell",
-      "inline": [
-          "sudo mv /tmp/consul-config/* /opt/consul/config/",
-          "sudo chown consul:consul /opt/consul/config/*",
-          "sudo chmod 644 /opt/consul/config/*",
-          "rm -rf /tmp/consul-config"
       ]
     }
   ]

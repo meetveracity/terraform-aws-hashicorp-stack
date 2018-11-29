@@ -4,7 +4,7 @@ data "aws_ami" "consul" {
 
   filter {
     name   = "name"
-    values = ["consul-amzn-linux-*"]
+    values = ["consul-server-amzn-linux-*"]
   }
 }
 
