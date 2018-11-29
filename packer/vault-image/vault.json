@@ -3,9 +3,9 @@
   "variables": {
     "vault_module_version": "v0.9.1",
     "vault_version": "0.10.4",
-    "ca_public_key_path": "../tls/cert/ca.crt.pem",
-    "tls_public_key_path": "../tls/cert/vault.crt.pem",
-    "tls_private_key_path": "../tls/cert/vault.key.pem",
+    "ca_public_key_path": "{{template_dir}}/../tls/cert/ca.crt.pem",
+    "tls_public_key_path": "{{template_dir}}/../tls/cert/vault.crt.pem",
+    "tls_private_key_path": "{{template_dir}}/../tls/cert/vault.key.pem",
     "ami_version": "{{timestamp}}"
   },
   "builders": [

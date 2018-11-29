@@ -5,9 +5,9 @@
     "nomad_version": "0.8.4",
     "nomad_module_version": "v0.4.2",
     "remote_docker_access": "false",
-    "ca_public_key_path": "../tls/cert/ca.crt.pem",
-    "tls_public_key_path": "../tls/cert/nomad.crt.pem",
-    "tls_private_key_path": "../tls/cert/nomad.key.pem",
+    "ca_public_key_path": "{{template_dir}}/../tls/cert/ca.crt.pem",
+    "tls_public_key_path": "{{template_dir}}/../tls/cert/nomad.crt.pem",
+    "tls_private_key_path": "{{template_dir}}/../tls/cert/nomad.key.pem",
     "ami_version": "{{timestamp}}"
   },
   "builders": [
@@ -79,7 +79,7 @@
     },
     {
       "type": "file",
-      "source": "config/",
+      "source": "{{template_dir}}/config/",
       "destination": "/tmp/nomad-config"
     },
     {
