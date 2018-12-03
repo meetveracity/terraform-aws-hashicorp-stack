@@ -20,7 +20,6 @@ packer build packer/vault-image/vault.json
 packer build packer/nomad-image/nomad.json
 ```
 
-
 ## Deploying the Stack
 
 ## Securing the Stack
